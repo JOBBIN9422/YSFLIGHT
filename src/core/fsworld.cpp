@@ -1,6 +1,6 @@
 #include <memory>
 
-#ifdef WIN32  // Assuming UNIX
+#ifdef _WIN32  // Assuming UNIX
 #else
 #include <sys/time.h>
 #endif

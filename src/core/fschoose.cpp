@@ -1,4 +1,4 @@
-#ifdef WIN32  // Assuming UNIX
+#ifdef _WIN32  // Assuming UNIX
 #define _WINSOCKAPI_
 #include <windows.h>
 #else
