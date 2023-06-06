@@ -8,6 +8,16 @@
       "installRoot": "C:/Users/jaubi/source/repos/YSFlight-working-base/YSFLIGHT/out/install/${name}",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "C:/Users/jaubi/source/repos/YSFlight-working-base/YSFLIGHT/out/build/${name}",
+      "installRoot": "C:/Users/jaubi/source/repos/YSFlight-working-base/YSFLIGHT/out/install/${name}",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": []
     }
   ]
 }
