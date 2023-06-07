@@ -382,6 +382,7 @@ protected:
 
 
 	int chGunPower; // <- When changing it to double, change the variable name to chGunPowerD for making use of error output
+	double chGunDispersion;
 	double chBulInitSpeed;
 	double chBulRange;
 	double chRadarCrossSection;

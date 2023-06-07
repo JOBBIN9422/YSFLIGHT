@@ -381,6 +381,7 @@ void FsAirplaneProperty::Initialize(void)
 	chGroundStaticPitch=0.0;
 
 	chGunPower=1;
+	chGunDispersion = 3.14159265358979323846 / 360.0; //gun dispersion in radians (30 MOA circle, taken from turret code)
 	chBulInitSpeed=340.0*5.0;  // Mach 5.0
 	chBulRange=3000.0;      // 5000m
 	chRadarCrossSection=1.0;
@@ -5965,6 +5966,10 @@ YSBOOL FsAirplaneProperty::FireGunIfVirtualTriggerIsPressed(
 						att.SetForwardVector(dir);
 						att.SetB(0.0);
 
+						//apply random offsets based on amount of gun dispersion
+						att.SetH(att.h() + chGunDispersion * double(rand() % 100 - 50) / 50.0);
+						att.SetP(att.p() + chGunDispersion * double(rand() % 100 - 50) / 50.0);
+
 						gun=staMatrix*chGunPosition[i];
 						bul.Fire(ctime,gun,att,chBulInitSpeed,chBulRange,chGunPower,owner,YSTRUE,YSTRUE);
 						staGunBullet--;
@@ -8141,6 +8146,7 @@ const char *const FsAirplaneProperty::keyWordSource[]=
 
 	// 2018/10/07
 	"INITZOOM",  // Initial zoom factor
+	"GUNDISPR",  // gun dispersion (radians)
 
 	NULL
 };
@@ -9533,6 +9539,13 @@ YSRESULT FsAirplaneProperty::SendCommand(const char in[])
 				{
 					chDefZoom=atof(av[1]);  // 2018/11/24 Close shave!  I was writing [i] here.
 					res=YSOK;
+				}
+				break;
+			case 189: //"GUNDISPR" gun dispersion (in radians)
+				if (ac >= 2)
+				{
+					chGunDispersion = atof(av[1]);
+					res = YSOK;
 				}
 				break;
 			}
