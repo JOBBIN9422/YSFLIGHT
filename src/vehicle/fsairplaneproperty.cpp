@@ -382,7 +382,9 @@ void FsAirplaneProperty::Initialize(void)
 
 	chGunPower=1;
 	chGunDispersion = YsPi / 720.0; //gun dispersion in radians (30 MOA circle, taken from turret code)
-	chBulInitSpeed=340.0*5.0;  // Mach 5.0
+	//chBulInitSpeed=340.0*5.0;  // Mach 5.0
+	chBulInitSpeed=1030;  // Mach 5.0
+
 	chBulRange=3000.0;      // 5000m
 	chRadarCrossSection=1.0;
 	chAAMRange=5000.0;
@@ -5962,8 +5964,18 @@ YSBOOL FsAirplaneProperty::FireGunIfVirtualTriggerIsPressed(
 
 					for(i=0; i<chNumGun && staGunBullet>0; i++)
 					{
+						//calculate bullet init velocity vector
+						YsVec3 bulletVel;
+						staAttitude.Mul(bulletVel, chGunDirection[i]);
+						bulletVel *= chBulInitSpeed;
+
+						//add plane velocity vector to bullet velocity vector
+						bulletVel += staVelocity;
+
 						staAttitude.Mul(dir,chGunDirection[i]);
-						att.SetForwardVector(dir);
+						double angleBtwn = acos((dir.x() * bulletVel.x() + dir.y() * bulletVel.y() + dir.z() * bulletVel.z()) / (dir.GetLength() + bulletVel.GetLength()));
+						//att.SetForwardVector(dir);
+						att.SetForwardVector(bulletVel);
 						att.SetB(0.0);
 
 						//apply random offsets based on amount of gun dispersion
@@ -5971,7 +5983,7 @@ YSBOOL FsAirplaneProperty::FireGunIfVirtualTriggerIsPressed(
 						att.SetP(att.p() + chGunDispersion * double(rand() % 100 - 50) / 50.0);
 
 						gun=staMatrix*chGunPosition[i];
-						bul.Fire(ctime,gun,att,chBulInitSpeed,chBulRange,chGunPower,owner,YSTRUE,YSTRUE);
+						bul.Fire(ctime,gun,att,bulletVel.GetLength(), chBulRange, chGunPower, owner, YSTRUE, YSTRUE);
 						staGunBullet--;
 					}
 
