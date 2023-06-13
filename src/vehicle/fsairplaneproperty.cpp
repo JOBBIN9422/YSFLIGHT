@@ -381,7 +381,7 @@ void FsAirplaneProperty::Initialize(void)
 	chGroundStaticPitch=0.0;
 
 	chGunPower=1;
-	chGunDispersion = 3.14159265358979323846 / 360.0; //gun dispersion in radians (30 MOA circle, taken from turret code)
+	chGunDispersion = YsPi / 720.0; //gun dispersion in radians (30 MOA circle, taken from turret code)
 	chBulInitSpeed=340.0*5.0;  // Mach 5.0
 	chBulRange=3000.0;      // 5000m
 	chRadarCrossSection=1.0;
