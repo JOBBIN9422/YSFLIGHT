@@ -768,7 +768,7 @@ void FsGroundProperty::Initialize(void)
 	chNumAaaPosition=0; // 0->Not specified in .DAT
 	chAaaPosition[0].Set(0.0,0.0,10.0);
 
-	chGunPrecision=YsPi/720.0;
+	chGunPrecision=YsPi/720.0; // 30 MOA diameter (+/- 15 MOA)
 
 	chSAMType=FSWEAPON_AIM9;
 	chSamMount.Set(0.0,2.0,0.0);
