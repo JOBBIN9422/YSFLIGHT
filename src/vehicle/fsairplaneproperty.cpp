@@ -5972,9 +5972,6 @@ YSBOOL FsAirplaneProperty::FireGunIfVirtualTriggerIsPressed(
 						//add plane velocity vector to bullet velocity vector
 						bulletVel += staVelocity;
 
-						staAttitude.Mul(dir,chGunDirection[i]);
-						double angleBtwn = acos((dir.x() * bulletVel.x() + dir.y() * bulletVel.y() + dir.z() * bulletVel.z()) / (dir.GetLength() + bulletVel.GetLength()));
-						//att.SetForwardVector(dir);
 						att.SetForwardVector(bulletVel);
 						att.SetB(0.0);
 
@@ -5983,7 +5980,7 @@ YSBOOL FsAirplaneProperty::FireGunIfVirtualTriggerIsPressed(
 						att.SetP(att.p() + chGunDispersion * double(rand() % 100 - 50) / 50.0);
 
 						gun=staMatrix*chGunPosition[i];
-						bul.Fire(ctime,gun,att,bulletVel.GetLength(), chBulRange, chGunPower, owner, YSTRUE, YSTRUE);
+						bul.Fire(ctime,gun,att,GetBulletSpeed(), chBulRange, chGunPower, owner, YSTRUE, YSTRUE);
 						staGunBullet--;
 					}
 
@@ -7062,7 +7059,7 @@ const double FsAirplaneProperty::GetRadarCrossSection(void) const
 
 const double &FsAirplaneProperty::GetBulletSpeed(void) const
 {
-	return chBulInitSpeed;
+	return chBulInitSpeed + GetVelocity();
 }
 
 const double &FsAirplaneProperty::GetRocketSpeed(void) const

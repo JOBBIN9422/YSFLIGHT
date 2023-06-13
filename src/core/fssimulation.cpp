@@ -8730,16 +8730,16 @@ void FsSimulation::SimDrawGunAim(void) const
 
 YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim) const
 {
-	YsVec3 pos;
-	YsAtt3 att;
-	YsMatrix4x4 mat;
-	const FsExistence *playerObj;
-	const FsAirplane *air;
+	YsVec3 pos;						//player aircraft position
+	YsAtt3 att;						//player aircraft orientation
+	YsMatrix4x4 mat;				//inverse of player aircraft homogeneous transform matrix
+	const FsExistence *playerObj;	//reference to player	
+	const FsAirplane *air;			//holder/iterator for potential target aircraft 
 
 	playerObj=GetPlayerObject();
-	if(NULL!=playerObj && playerObj->GetWeaponOfChoice()==FSWEAPON_GUN)
+	if(NULL!=playerObj && playerObj->GetWeaponOfChoice()==FSWEAPON_GUN) //if player is currently using cannons
 	{
-		if(FSEX_GROUND==playerObj->GetType())
+		if(FSEX_GROUND==playerObj->GetType()) //if the player is a ground vehicle, manually compute its inverse transform matrix
 		{
 			const FsGround *playerGround=(const FsGround *)playerObj;
 			pos=playerObj->GetPosition();
@@ -8748,7 +8748,7 @@ YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim)
 			mat.Rotate(att);
 			mat.Invert();
 		}
-		else
+		else //if the player is an aircraft, get its position, attitude, and inverse matrix via the proper methods
 		{
 			pos=playerObj->GetPosition();
 			att=playerObj->GetAttitude();
@@ -8760,14 +8760,15 @@ YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim)
 		target=NULL;
 		targetZ=100000.0;
 		air=NULL;
-		while((air=FindNextAirplane(air))!=NULL)
+		while((air=FindNextAirplane(air))!=NULL) //iterate over the linked-list of aircraft (FindNextAirplane() just returns the NEXT pointer of the given pointer)
 		{
-			if(air->IsAlive()==YSTRUE && IsPlayerAirplane(air)!=YSTRUE)
+			if(air->IsAlive()==YSTRUE && IsPlayerAirplane(air)!=YSTRUE) //if the current aircraft in the list is alive and not the player's aircraft:
 			{
 				YsVec3 trg;
 
-				trg=mat*(air->GetPosition());
+				trg=mat*(air->GetPosition()); //calculate position of the target in player aircraft's frame of reference (?)
 
+				//if target aircraft is within 990 meters and +/- 30 degrees offset from player's attitude, select that target
 				if(YsTolerance<trg.z() &&
 				  atan(YsAbs(trg.x())/trg.z())<YsDegToRad(30) &&
 				  atan(YsAbs(trg.y())/trg.z())<YsDegToRad(30) &&
@@ -8775,7 +8776,7 @@ YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim)
 				  trg.z()<990.0)
 				{
 					target=air;
-					targetZ=trg.z();
+					targetZ=trg.z(); //targetZ is updated to keep track of the closest valid target
 				}
 			}
 		}
@@ -8783,32 +8784,42 @@ YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim)
 
 		if(target!=NULL)
 		{
+			//rTrg: target position in player's frame of reference (+Z direction into screen)
+			//tVec: target velocity vector
+			//tRVec: target velocity vector in player's frame of reference
 			YsVec3 rTrg,tVec,tRVec;
 			double bulSpeed=100.0;
 
+			//trg: target's world position 
 			const YsVec3 trg=target->Prop().GetPosition();
-			target->Prop().GetVelocity(tVec);
+			target->Prop().GetVelocity(tVec); //read target's velocity vector into tVec
+
+			//read player cannon velocity (ground or air vehicle)
 			if(FSEX_GROUND==playerObj->GetType())
 			{
 				bulSpeed=((const FsGround *)playerObj)->Prop().GetBulletSpeed();
 			}
 			else if(FSEX_AIRPLANE==playerObj->GetType())
 			{
-				bulSpeed=((const FsAirplane *)playerObj)->Prop().GetBulletSpeed();
+				bulSpeed = ((const FsAirplane*)playerObj)->Prop().GetBulletSpeed();
 			}
 
+			//calculate tRVec (target velocity in player's viewport coordinates)
 			mat.Mul(tRVec,tVec,0.0);
+
+			//calculate rTrg (target position in player's viewport coordinates)
 			rTrg=mat*trg;
 
+			//calculate estimated travel time = (Z dist to target) / (bullet speed - Z component of target velocity relative to player)
 			double tEstimated;
 			tEstimated=rTrg.z()/(bulSpeed-tRVec.z());
 
 
 			YsVec3 bVec;
-			bVec.Set(0.0,0.0,bulSpeed*tEstimated);
-			att.Mul(bVec,bVec);
-			aim=pos+bVec-tVec*tEstimated;
-			aim.SetY(aim.y()-0.5*FsGravityConst*tEstimated*tEstimated);
+			bVec.Set(0.0, 0.0, bulSpeed * tEstimated); //create a Z vector with Z value = Z distance from player to plane (estimated)
+			att.Mul(bVec,bVec); //rotate the vector to align with the player aircraft's attitude 
+			aim=pos+bVec-tVec*tEstimated; //calculate aim position 
+			aim.SetY(aim.y()-0.5*FsGravityConst*tEstimated*tEstimated); //account for bullet drop
 
 			return YSOK;
 		}
