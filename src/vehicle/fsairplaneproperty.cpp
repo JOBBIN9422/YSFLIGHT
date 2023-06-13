@@ -8156,6 +8156,7 @@ const char *const FsAirplaneProperty::keyWordSource[]=
 	// 2018/10/07
 	"INITZOOM",  // Initial zoom factor
 	"GUNDISPR",  // gun dispersion (radians)
+	"BULSPEED",  // cannon bullet initial V (m/sec)
 
 	NULL
 };
@@ -9554,6 +9555,13 @@ YSRESULT FsAirplaneProperty::SendCommand(const char in[])
 				if (ac >= 2)
 				{
 					chGunDispersion = atof(av[1]);
+					res = YSOK;
+				}
+				break;
+			case 190: //"BULSPEED" cannon round initial velocity (in meters/sec)
+				if (ac >= 2)
+				{
+					chBulInitSpeed = atof(av[1]);
 					res = YSOK;
 				}
 				break;
