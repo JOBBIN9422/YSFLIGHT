@@ -381,7 +381,7 @@ void FsAirplaneProperty::Initialize(void)
 	chGroundStaticPitch=0.0;
 
 	chGunPower=1;
-	chGunDispersion = YsPi / 720.0; //gun dispersion in radians (30 MOA circle, taken from turret code)
+	chGunDispersion = YsPi / 720.0; //gun dispersion in radians (30 MOA circle)
 	//chBulInitSpeed=340.0*5.0;  // Mach 5.0
 	chBulInitSpeed=1030;  // M61 vulcan muzzle V
 
