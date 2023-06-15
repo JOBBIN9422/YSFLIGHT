@@ -5967,6 +5967,8 @@ YSBOOL FsAirplaneProperty::FireGunIfVirtualTriggerIsPressed(
 						//calculate bullet init velocity vector
 						YsVec3 bulletVel;
 						staAttitude.Mul(bulletVel, chGunDirection[i]);
+
+						//scale by muzzle velocity
 						bulletVel *= chBulInitSpeed;
 
 						//add plane velocity vector to bullet velocity vector

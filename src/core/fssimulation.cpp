@@ -8801,7 +8801,21 @@ YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim)
 			}
 			else if(FSEX_AIRPLANE==playerObj->GetType())
 			{
-				bulSpeed = ((const FsAirplane*)playerObj)->Prop().GetBulletSpeed();
+				const FsAirplane* playerPlane = (const FsAirplane*)playerObj;
+				bulSpeed = playerPlane->Prop().GetBulletSpeed();
+
+				//cannon rounds inherit plane's velocity: need to correct bullet's departure vector w/ plane velocity
+				YsVec3 planeV;
+				playerPlane->Prop().GetVelocity(planeV);
+
+				//normalize attitude vector and scale with bullet velocity
+				YsVec3 attVec = att.GetForwardVector();
+				attVec.Normalize();
+				attVec *= (playerPlane->Prop().GetBulletSpeed());
+
+				//add plane velocity to bullet velocity and set as the bullet departure attitude
+				attVec += planeV;
+				att.SetForwardVector(attVec);
 			}
 
 			//calculate tRVec (target velocity in player's viewport coordinates)
@@ -8813,12 +8827,11 @@ YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim)
 			//calculate estimated travel time = (Z dist to target) / (bullet speed - Z component of target velocity relative to player)
 			double tEstimated;
 			tEstimated=rTrg.z()/(bulSpeed-tRVec.z());
-
-
+ 
 			YsVec3 bVec;
-			bVec.Set(0.0, 0.0, bulSpeed * tEstimated); //create a Z vector with Z value = Z distance from player to plane (estimated)
-			att.Mul(bVec,bVec); //rotate the vector to align with the player aircraft's attitude 
-			aim=pos+bVec-tVec*tEstimated; //calculate aim position 
+			bVec.Set(0.0, 0.0, bulSpeed * tEstimated);  //create a Z vector with Z value = Z distance from player to plane (estimated)
+			att.Mul(bVec,bVec);							//rotate the vector to align with the bullet's departure attitude
+			aim=pos+bVec-tVec*tEstimated;				//calculate aim position 
 			aim.SetY(aim.y()-0.5*FsGravityConst*tEstimated*tEstimated); //account for bullet drop
 
 			return YSOK;
