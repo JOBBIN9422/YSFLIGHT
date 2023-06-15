@@ -38,8 +38,6 @@
 
 #include <time.h>
 
-
-
 #include "fsgui.h"
 #include "fsguiselectiondialogbase.h"
 #include <fsguifiledialog.h>
@@ -8678,7 +8676,9 @@ void FsSimulation::SimDrawGunAim(void) const
 	{
 		const FsAirplane *target;
 		YsVec3 aim;
-		if(SimCalculateGunAim(target,aim)==YSOK)
+		double dummyTrgDist = 0.0, *targetDist = &dummyTrgDist;
+		double dummyTEstimated = 0.0, *tEstimated = &dummyTEstimated;
+		if(SimCalculateGunAim(target,aim, targetDist, tEstimated)==YSOK)
 		{
 			YsVec3 pos;
 			YsAtt3 att;
@@ -8700,7 +8700,13 @@ void FsSimulation::SimDrawGunAim(void) const
 				mat=playerObj->GetInverseMatrix();
 			}
 
-			hud->DrawCircleContainer(mat,att,aim,target->GetPosition(),YsRed(),"",NULL,YSTRUE,0,30);
+			//format target distance and estimated impact time HUD strings
+			char targetDistStr[50]{};
+			char tEstimatedStr[50]{};
+			sprintf(targetDistStr, "%.2f METERS", *targetDist);
+			sprintf(tEstimatedStr, "%.2f SEC", *tEstimated);
+
+			hud->DrawCircleContainer(mat,att,aim,target->GetPosition(),YsRed(),targetDistStr,tEstimatedStr,YSTRUE,0,30);
 		}
 	}
 
@@ -8728,7 +8734,7 @@ void FsSimulation::SimDrawGunAim(void) const
 	}
 }
 
-YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim) const
+YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim, double* targetDist, double* tEstimatedOut) const
 {
 	YsVec3 pos;						//player aircraft position
 	YsAtt3 att;						//player aircraft orientation
@@ -8824,9 +8830,18 @@ YSRESULT FsSimulation::SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim)
 			//calculate rTrg (target position in player's viewport coordinates)
 			rTrg=mat*trg;
 
+			if (targetDist != nullptr)
+			{
+				*targetDist = rTrg.GetLength();
+			}
+
 			//calculate estimated travel time = (Z dist to target) / (bullet speed - Z component of target velocity relative to player)
 			double tEstimated;
 			tEstimated=rTrg.z()/(bulSpeed-tRVec.z());
+			if (tEstimatedOut != nullptr)
+			{
+				*tEstimatedOut = tEstimated;
+			}
  
 			YsVec3 bVec;
 			bVec.Set(0.0, 0.0, bulSpeed * tEstimated);  //create a Z vector with Z value = Z distance from player to plane (estimated)
@@ -10485,7 +10500,7 @@ void FsSimulation::SimDecideViewpoint_Air(ActualViewMode &actualViewMode,FSVIEWM
 				{
 					const FsAirplane *target;
 					YsVec3 aim;
-					if(SimCalculateGunAim(target,aim)==YSOK)
+					if(SimCalculateGunAim(target,aim, nullptr, nullptr)==YSOK)
 					{
 						double viewTargetDist=playerPlane->GetApproximatedCollideRadius();
 

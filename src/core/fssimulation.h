@@ -937,7 +937,7 @@ protected:
 	void SimDrawCrossDesignator(void) const;
 
 	void SimDrawGunAim(void) const;
-	YSRESULT SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim) const;
+	YSRESULT SimCalculateGunAim(const FsAirplane *&target,YsVec3 &aim, double* targetDist = nullptr, double* tEstimatedOut = nullptr) const;
 	void SimDrawBombingAim(const ActualViewMode &actualViewMode) const;
 
 	void SimBlastSound(YSBOOL demoMode);
