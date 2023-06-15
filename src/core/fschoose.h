@@ -129,6 +129,7 @@ protected:
 
 #include "ysbitmap.h"
 #include "fsgui.h"
+#include "fsguiselectiondialogbase.h"
 
 class FsGuiChooseField : public FsGuiDialogWithFieldAndAircraft
 {
