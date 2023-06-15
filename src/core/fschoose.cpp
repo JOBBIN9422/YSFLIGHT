@@ -375,7 +375,7 @@ YSRESULT FsChoose::KeyIn(int ky,int c)
 
 	if(prevCursorPosition!=currentCursorPosition)
 	{
-#ifdef WIN32
+#ifdef _WIN32
 		lastCursorMoveClock=clock();
 #else
 		struct timeval tm;
@@ -672,7 +672,7 @@ YSRESULT FsChoose::ProcessMouse(int x0,int y0,YSBOOL lb,YSBOOL mb,YSBOOL rb,int 
 
 			if(prevCursorPosition!=currentCursorPosition)
 			{
-#ifdef WIN32
+#ifdef _WIN32
 				lastCursorMoveClock=clock();
 #else
 				struct timeval tm;
@@ -1181,7 +1181,7 @@ int FsChoose::GetNumChoice(void)
 
 void FsChoose::DrawChosenAirplane(FsWorld *world)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	int stillTime;
 	stillTime=YsAbs(clock()-lastCursorMoveClock);
 	if(lastCursorMoveClock==0 || stillTime*3>=CLOCKS_PER_SEC)
@@ -1247,7 +1247,7 @@ void FsChoose::DrawChosenField(FsWorld *world)
 {
 	if(scn!=NULL)
 	{
-	#ifdef WIN32
+	#ifdef _WIN32
 		int stillTime;
 		stillTime=YsAbs(clock()-lastCursorMoveClock);
 		if(lastCursorMoveClock==0 || stillTime*3>=CLOCKS_PER_SEC)

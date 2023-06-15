@@ -9,7 +9,7 @@
 #include <OpenGL/glu.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <wingdi.h>
 #endif

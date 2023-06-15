@@ -9,7 +9,7 @@
 #include <ysglbuffermanager_gl1.h>
 
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 

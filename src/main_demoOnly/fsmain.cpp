@@ -738,7 +738,7 @@ static FsLazyWindowApplication *appPtr=nullptr;
 
 void FsHelpGeneralHelpEnglish(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	YsOpenURL("document\\english.html");
 #else
 	YsOpenURL("document/english.html");
@@ -747,7 +747,7 @@ void FsHelpGeneralHelpEnglish(void)
 
 void FsHelpControlEnglish(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	YsOpenURL("document\\control.html");
 #else
 	YsOpenURL("document/control.html");
@@ -756,7 +756,7 @@ void FsHelpControlEnglish(void)
 
 void FsHelpGeneralHelpJapanese(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	YsOpenURL("document\\japanese.html");
 #else
 	YsOpenURL("document/japanese.html");
@@ -765,7 +765,7 @@ void FsHelpGeneralHelpJapanese(void)
 
 void FsHelpControlJapanese(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	YsOpenURL("document\\controlj.html");
 #else
 	YsOpenURL("document/controlj.html");

@@ -11,7 +11,7 @@
 
 #include <fstexturemanager.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <mmsystem.h>
 #endif
@@ -110,7 +110,7 @@ YSBOOL FsIsPointSpriteAvailable(void)
 }
 
 
-#ifdef WIN32
+#ifdef _WIN32
 static LARGE_INTEGER frmClock1,frmClock2;
 #endif
 
@@ -214,7 +214,7 @@ void FsClearScreenAndZBuffer(const YsColor &clearColor)
 	FsOpenGlShowError("FsClearScreenAndZBuffer");
 #endif
 
-//#ifdef WIN32
+//#ifdef _WIN32
 //	frmClock1=frmClock2;
 //	QueryPerformanceCounter(&frmClock2);
 //	printf("* %d\n",frmClock2.LowPart-frmClock1.LowPart);

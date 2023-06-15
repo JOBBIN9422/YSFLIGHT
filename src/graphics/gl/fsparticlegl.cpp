@@ -1,6 +1,6 @@
 #include <ysclass.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <mmsystem.h>
 #endif
@@ -32,7 +32,7 @@
 // extern unsigned int fsParticleTex;
 extern double fsOpenGLVersion;
 
-#ifdef WIN32
+#ifdef _WIN32
 static void (WINAPI *glPointParameterf)(GLenum,GLfloat)=NULL;
 static void (WINAPI *glPointParameteri)(GLenum,GLint)=NULL;
 static void (WINAPI *glPointParameterfv)(GLenum,const GLfloat *)=NULL;
@@ -53,7 +53,7 @@ static YSBOOL FsPointParameterIsAvailable(void)
 		{
 			funcAvailable=YSFALSE;
 		}
-#ifdef WIN32
+#ifdef _WIN32
 		glPointParameteri=(void (WINAPI *)(GLenum,GLint))wglGetProcAddress("glPointParameteri");
 		glPointParameterf=(void (WINAPI *)(GLenum,GLfloat))wglGetProcAddress("glPointParameterf");
 		glPointParameteriv=(void (WINAPI *)(GLenum,const GLint *))wglGetProcAddress("glPointParameteriv");

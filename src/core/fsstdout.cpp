@@ -80,7 +80,7 @@ void FsStderr::Output(char str[])
 
 void FsClearConsoleWindow(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE hCon;
 	COORD pos;
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -106,7 +106,7 @@ void FsClearConsoleWindow(void)
 
 void FsResetConsoleWindowCursorPosition(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE hCon;
 	COORD pos;
 
@@ -122,7 +122,7 @@ void FsResetConsoleWindowCursorPosition(void)
 
 void FsSetConsoleCursorLocation(int x,int y)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE hCon;
 	COORD pos;
 

@@ -21,7 +21,7 @@ class FsCallBack20080220
 {
 public:
 // OS Dependent
-#ifdef WIN32
+#ifdef _WIN32
 	virtual HWND GetMainWindowHandle(void);  // Return NULL in server-console version
 #endif
 

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <conio.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -11,7 +11,7 @@
 
 void ClearScreen(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE hCon;
 	COORD pos;
 	CONSOLE_SCREEN_BUFFER_INFO csbi;

@@ -4,7 +4,7 @@
 #include "graphics/common/fsopengl.h"
 #include "../../fswindow.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <mmsystem.h>
 #endif

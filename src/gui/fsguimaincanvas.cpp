@@ -12,7 +12,7 @@
 
 #include "fsguinewflightdialog.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <float.h>
 #include <direct.h>
 #else

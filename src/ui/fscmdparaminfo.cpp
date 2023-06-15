@@ -6,7 +6,7 @@
 
 FsCommandParameter::FsCommandParameter()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	keyMenu=YSFALSE;
 #else
 	keyMenu=YSTRUE;

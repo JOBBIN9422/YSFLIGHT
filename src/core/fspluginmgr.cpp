@@ -13,7 +13,7 @@
 #include "fsfilename.h"
 #include "fsplugin.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 typedef const char *(__cdecl *FSPLUGINNAMEFUNC)(void);
 typedef FsPlugIn20080220 *(__cdecl *FSLINKTESTPROC20080220)(FsCallBack20080220 *);
@@ -26,7 +26,7 @@ class FsPlugInInfo
 public:
 	FsPlugInInfo();
 
-#ifdef WIN32
+#ifdef _WIN32
 	HMODULE hDll;
 #endif
 
@@ -51,7 +51,7 @@ return;
 	YsArray <YsWString> fileList;
 	if(FsFindFileList(fileList,FsGetPlugInDir(),L"gen",L"dll")==YSOK)
 	{
-#ifdef WIN32
+#ifdef _WIN32
 		int i;
 		YsWString dllFn;
 		forYsArray(i,fileList)
@@ -114,7 +114,7 @@ return;
 
 void FsFreePlugIn(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	int i;
 	forYsArray(i,fsPlugInList)
 	{
@@ -187,7 +187,7 @@ void FsPluginCallNetFreeMemory(const double &ctime,FsSimulation *sim)
 
 
 
-#ifdef WIN32
+#ifdef _WIN32
 extern HWND FsWin32GetMainWindowHandle(void);
 
 HWND FsCallBack20080220::GetMainWindowHandle(void)
