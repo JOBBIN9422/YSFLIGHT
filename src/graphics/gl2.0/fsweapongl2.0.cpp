@@ -266,11 +266,13 @@ void FsWeaponHolder::EndDraw(void) const
 
 	renderer=YsGLSLSharedVariColor3DRenderer();
 	YsGLSLUse3DRenderer(renderer);
+	glLineWidth(2.0f);
 	YsGLSLDrawPrimitiveVtxColfv(
 	    renderer,GL_LINES,
 	    fsWeaponGraphicCache->lineVtxColBuf.nVtx,
 	    fsWeaponGraphicCache->lineVtxColBuf.vtxArray,
 	    fsWeaponGraphicCache->lineVtxColBuf.colArray);
+	glLineWidth(1.0f);
 	YsGLSLEndUse3DRenderer(renderer);
 
 	const GLfloat debrisColor[4]={0.125f,0.125f,0.125f,1.0f};

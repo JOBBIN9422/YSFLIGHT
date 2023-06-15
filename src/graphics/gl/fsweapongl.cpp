@@ -62,12 +62,14 @@ void FsWeapon::Draw(
 		case FSWEAPON_GUN:
 			glDisable(GL_LIGHTING);
 
+			glLineWidth(2.0f);
 			glBegin(GL_LINES);
 			glColor3d(1.0,1.0,0.0);
 			glVertex3dv(pos);
 			glColor3d(1.0,1.0,1.0);
 			glVertex3dv(pos+vec/velocity*10.0);
 			glEnd();
+			glLineWidth(1.0f);
 			break;
 		case FSWEAPON_AIM9:
 			if(lifeRemain>YsTolerance)
