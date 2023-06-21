@@ -76,7 +76,7 @@ void FsHeadUpDisplay::DrawVelocityVectorIndicator(const YsVec3 &viewPos,const Ys
 	YsGLSLEndUse3DRenderer(renderer);
 }
 
-void FsHeadUpDisplay::DrawRocketVelocityVectorIndicator(const YsVec3& viewPos, const YsAtt3& viewAtt, const YsVec3& v)
+void FsHeadUpDisplay::DrawWeaponVelocityVectorIndicator(const YsVec3& viewPos, const YsAtt3& viewAtt, const YsVec3& v)
 {
 	YsVec3 vel, target, ev, uv, rv, p1, p2;
 	ev = viewAtt.GetForwardVector();
@@ -107,22 +107,19 @@ void FsHeadUpDisplay::DrawRocketVelocityVectorIndicator(const YsVec3& viewPos, c
 		target = viewPos + vel;
 
 		const double rad = 0.1;
+		const double scale = 1.0;
 
 		int nLineVtx = 0;
 		GLfloat lineVtx[6 * 2];
 
-		p1 = target - rv * rad * 1.8;
-		p2 = target + rv * rad * 1.8;
+		//draw both legs of the "X" crosshair
+		p1 = target - (rv * rad * scale) - (uv * rad * scale);
+		p2 = target + (rv * rad * scale) + (uv * rad * scale);
 		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p1.x(), (GLfloat)p1.y(), (GLfloat)p1.z());
 		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p2.x(), (GLfloat)p2.y(), (GLfloat)p2.z());
 
-		//p1 = target - rv * rad;
-		//p2 = target - rv * rad * 1.8;
-		//FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p1.x(), (GLfloat)p1.y(), (GLfloat)p1.z());
-		//FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p2.x(), (GLfloat)p2.y(), (GLfloat)p2.z());
-
-		p1 = target - uv * rad * 1.8;
-		p2 = target + uv * rad * 1.8;
+		p1 = target - (uv * rad * scale) + (rv * rad * scale);
+		p2 = target + (uv * rad * scale) - (rv * rad * scale);
 		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p1.x(), (GLfloat)p1.y(), (GLfloat)p1.z());
 		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p2.x(), (GLfloat)p2.y(), (GLfloat)p2.z());
 

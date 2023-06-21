@@ -734,6 +734,52 @@ void FsHeadUpDisplay::DrawAttitude(const YsVec3 &pos,const YsAtt3 &att,const YsV
 	glEnable(GL_DEPTH_TEST);
 }
 
+void FsHeadUpDisplay::DrawWeaponVelocityVectorIndicator(const YsVec3& viewPos, const YsAtt3& viewAtt, const YsVec3& v)
+{
+	YsVec3 vel, target, ev, uv, rv, p1, p2;
+	ev = viewAtt.GetForwardVector();
+	uv = viewAtt.GetUpVector();
+	rv = ev ^ uv;
+
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+
+	glColor3d(hudCol.Rd(), hudCol.Gd(), hudCol.Bd());
+
+	vel = v;
+
+	viewAtt.MulInverse(vel, vel);
+	if (vel.z() > YsTolerance)
+	{
+		vel.DivX(vel.z());
+		vel.MulX(5.0);
+		vel.DivY(vel.z());
+		vel.MulY(5.0);
+		vel.SetZ(5.0);
+		viewAtt.Mul(vel, vel);
+		target = viewPos + vel;
+
+		const double rad = 0.1;
+		const double scale = 1.0;
+
+		//draw both legs of the "X" crosshair
+		glBegin(GL_LINES);
+		p1 = target - (rv * rad * scale) - (uv * rad * scale);
+		p2 = target + (rv * rad * scale) + (uv * rad * scale);;
+		glVertex3dv(p1);
+		glVertex3dv(p2);
+
+		p1 = target - uv * rad * scale + (rv * rad * scale);
+		p2 = target + uv * rad * scale - (rv * rad * scale);
+		glVertex3dv(p1);
+		glVertex3dv(p2);
+
+		glEnd();
+	}
+
+	glEnable(GL_DEPTH_TEST);
+}
+
 void FsHeadUpDisplay::DrawVelocityVectorIndicator(const YsVec3 &viewPos,const YsAtt3 &viewAtt,const YsVec3 &v)
 {
 	YsVec3 vel,target,ev,uv,rv,p1,p2;

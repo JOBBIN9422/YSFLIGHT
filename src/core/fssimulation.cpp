@@ -7498,13 +7498,14 @@ void FsSimulation::SimDrawAircraftInterior(const ActualViewMode &actualViewMode,
 			}
 		}
 
+		//draw the rocket velocity indicator if applicable
 		if (0 != (instDrawSwitch & (FSISS_3DHUD | FSISS_2DHUD)) && YSTRUE == air->Prop().CheckHUDVisible() && air->Prop().GetWeaponOfChoice() == FSWEAPON_ROCKET)
 		{
 			YsVec3 missileInitVel(0.0, 0.0, 1.0);
 			YsAtt3 missileAtt = air->Prop().GetMissileAttitude();
 			missileAtt.Mul(missileInitVel, missileInitVel);
 			missileInitVel *= air->Prop().GetVelocity();
-			hud->DrawRocketVelocityVectorIndicator(fakeViewPos, instViewAtt, missileInitVel);
+			hud->DrawWeaponVelocityVectorIndicator(fakeViewPos, instViewAtt, missileInitVel);
 		}
 
 		if(0!=(instDrawSwitch&FSISS_2DHUD) && YSTRUE==air->Prop().CheckHUDVisible())
