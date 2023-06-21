@@ -58,6 +58,13 @@ void FsHeadUpDisplay::DrawAttitude(const YsVec3 &pos,const YsAtt3 &att,const YsV
 {
 }
 
+void FsHeadUpDisplay::DrawWeaponVelocityVectorIndicator(const YsVec3& viewPos, const YsAtt3& viewAtt, const YsVec3& v)
+{
+	viewPos;
+	viewAtt;
+	v;
+}
+
 void FsHeadUpDisplay::DrawVelocityVectorIndicator(const YsVec3 &viewPos,const YsAtt3 &viewAtt,const YsVec3 &v)
 {
 	viewPos;
