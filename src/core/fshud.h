@@ -43,6 +43,7 @@ public:
 
 	void DrawAttitude(const YsVec3 &cockpitPos,const YsAtt3 &att,const YsVec3 &viewPos,const YsAtt3 &viewAtt);
 	void DrawVelocityVectorIndicator(const YsVec3 &viewPos,const YsAtt3 &viewAtt,const YsVec3 &vel);
+	void DrawRocketVelocityVectorIndicator(const YsVec3& viewPos, const YsAtt3& viewAtt, const YsVec3& vel);
 
 	void DrawCircleContainer
 		   (const YsMatrix4x4 &viewpoint,

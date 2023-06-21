@@ -76,6 +76,64 @@ void FsHeadUpDisplay::DrawVelocityVectorIndicator(const YsVec3 &viewPos,const Ys
 	YsGLSLEndUse3DRenderer(renderer);
 }
 
+void FsHeadUpDisplay::DrawRocketVelocityVectorIndicator(const YsVec3& viewPos, const YsAtt3& viewAtt, const YsVec3& v)
+{
+	YsVec3 vel, target, ev, uv, rv, p1, p2;
+	ev = viewAtt.GetForwardVector();
+	uv = viewAtt.GetUpVector();
+	rv = ev ^ uv;
+
+	glDisable(GL_DEPTH_TEST);
+
+
+	YsGLSL3DRenderer* renderer = YsGLSLSharedFlat3DRenderer();
+
+	const GLfloat color[4] = { hudCol.Rf(),hudCol.Gf(),hudCol.Bf(),1.0f };
+
+	YsGLSLUse3DRenderer(renderer);
+	YsGLSLSet3DRendererUniformColorfv(renderer, color);
+
+	vel = v;
+
+	viewAtt.MulInverse(vel, vel);
+	if (vel.z() > YsTolerance)
+	{
+		vel.DivX(vel.z());
+		vel.MulX(5.0);
+		vel.DivY(vel.z());
+		vel.MulY(5.0);
+		vel.SetZ(5.0);
+		viewAtt.Mul(vel, vel);
+		target = viewPos + vel;
+
+		const double rad = 0.1;
+
+		int nLineVtx = 0;
+		GLfloat lineVtx[6 * 2];
+
+		p1 = target - rv * rad * 1.8;
+		p2 = target + rv * rad * 1.8;
+		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p1.x(), (GLfloat)p1.y(), (GLfloat)p1.z());
+		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p2.x(), (GLfloat)p2.y(), (GLfloat)p2.z());
+
+		//p1 = target - rv * rad;
+		//p2 = target - rv * rad * 1.8;
+		//FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p1.x(), (GLfloat)p1.y(), (GLfloat)p1.z());
+		//FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p2.x(), (GLfloat)p2.y(), (GLfloat)p2.z());
+
+		p1 = target - uv * rad * 1.8;
+		p2 = target + uv * rad * 1.8;
+		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p1.x(), (GLfloat)p1.y(), (GLfloat)p1.z());
+		FsGLAddVertex3(nLineVtx, lineVtx, (GLfloat)p2.x(), (GLfloat)p2.y(), (GLfloat)p2.z());
+
+		YsGLSLDrawPrimitiveVtxfv(renderer, GL_LINES, 6, lineVtx);
+	}
+
+	glEnable(GL_DEPTH_TEST);
+	YsGLSLEndUse3DRenderer(renderer);
+}
+
+
 void FsHeadUpDisplay::DrawCircleContainer
 	   (const YsMatrix4x4 &viewpoint,
 	    const YsAtt3 &viewAtt,

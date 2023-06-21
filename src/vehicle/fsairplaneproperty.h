@@ -579,6 +579,7 @@ public:
 	YSRESULT TurnOnRadar(void);
 	YSRESULT TurnOffRadar(void);
 	YSBOOL GetDamage(YSBOOL &killed,int dmg,FSDIEDOF diedOf);
+	YsAtt3 GetMissileAttitude() const;
 
 	YSRESULT ToggleLight(void);
 	YSRESULT ToggleNavLight(void);

@@ -6115,6 +6115,34 @@ YSBOOL FsAirplaneProperty::FireSelectedWeapon(
 	return FireWeapon(blockedByBombBay,sim,ct,bul,own,staWoc);
 }
 
+YsAtt3 FsAirplaneProperty::GetMissileAttitude() const
+{
+	YsAtt3 missileAtt(0.0, 0.0, 1.0);
+	if (staMovingBackward == YSTRUE || staV <= chManSpeed1)
+	{
+		missileAtt = staAttitude;
+	}
+	else if (staV > chManSpeed2)
+	{
+		missileAtt.SetForwardVector(staVelocity);
+		missileAtt.SetB(staAttitude.b());
+	}
+	else
+	{
+		double t;
+		YsVec3 v1, v2, ev;
+		v1 = staAttitude.GetForwardVector();
+		v2 = staVelocity;
+		v2.Normalize();
+		t = (staV - chManSpeed1) / (chManSpeed2 - chManSpeed1);
+		ev = v1 * (1.0 - t) + v2 * t;
+		missileAtt.SetForwardVector(ev);
+		missileAtt.SetB(staAttitude.b());
+	}
+
+	return missileAtt;
+}
+
 YSBOOL FsAirplaneProperty::FireWeapon(
     YSBOOL &blockedByBombBay,FsSimulation *sim,const double &ctime,class FsWeaponHolder &bul,FsExistence *owner,FSWEAPONTYPE wpnType)
 {
@@ -6215,27 +6243,7 @@ YSBOOL FsAirplaneProperty::FireWeapon(
 	}
 
 	missilePos=staMatrix*missilePos;
-	if(staMovingBackward==YSTRUE || staV<=chManSpeed1)
-	{
-		missileAtt=staAttitude;
-	}
-	else if(staV>chManSpeed2)
-	{
-		missileAtt.SetForwardVector(staVelocity);
-		missileAtt.SetB(staAttitude.b());
-	}
-	else
-	{
-		double t;
-		YsVec3 v1,v2,ev;
-		v1=staAttitude.GetForwardVector();
-		v2=staVelocity;
-		v2.Normalize();
-		t=(staV-chManSpeed1)/(chManSpeed2-chManSpeed1);
-		ev=v1*(1.0-t)+v2*t;
-		missileAtt.SetForwardVector(ev);
-		missileAtt.SetB(staAttitude.b());
-	}
+	missileAtt = GetMissileAttitude();
 
 	if(0<GetNumWeapon(wpnType))
 	{
