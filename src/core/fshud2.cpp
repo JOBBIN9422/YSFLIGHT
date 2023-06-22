@@ -784,30 +784,57 @@ void FsHud2::DrawAttitude(
 
 			int nLineVtx=0;
 			float lineVtx[20*3];
+			float cutoff = 0.075f;
 
 			if(0<=i)
 			{
-				nLineVtx=2;
-				lineVtx[0]=(float)-lng;
-				lineVtx[1]=0.0f;
-				lineVtx[2]=(float)rad;
-				lineVtx[3]=(float) lng;
-				lineVtx[4]=0.0f;
-				lineVtx[5]=(float)rad;
+				nLineVtx=4;
+				lineVtx[0] = (float)-lng;
+				lineVtx[1] = 0.0f;
+				lineVtx[2] = (float)rad;
+
+				lineVtx[3] = -cutoff;
+				lineVtx[4] = 0.0f;
+				lineVtx[5] = (float)rad;
+
+				lineVtx[6] = cutoff;
+				lineVtx[7] = 0.0f;
+				lineVtx[8] = (float)rad;
+
+				lineVtx[9]  = (float)lng;
+				lineVtx[10] = 0.0f;
+				lineVtx[11] = (float)rad;
 			}
 			else
 			{
-				nLineVtx=20;
-				for(int j=0; j<10; j++)
+				nLineVtx = 20;
+				float lineSpan = fabs(lng - cutoff);
+				//range from -lng to -cutoff with gaps
+				for (int j = 0; j < 5; j++)
 				{
-					const float x0=(float)(-lng+lng*2.2*(double)j/10.0);
-					const float x1=(float)(x0+lng*0.055);
-					lineVtx[j*6+0]=x0;
-					lineVtx[j*6+1]=0.0f;
-					lineVtx[j*6+2]=(float)rad;
-					lineVtx[j*6+3]=x1;
-					lineVtx[j*6+4]=0.0f;
-					lineVtx[j*6+5]=(float)rad;
+						const float x0 = (float)(-lng + lineSpan * (double)j / 5.0);
+						const float x1=(float)(x0 + lineSpan / 10.0);
+						lineVtx[j * 6 + 0] = x0;
+						lineVtx[j * 6 + 1] = 0.0f;
+						lineVtx[j * 6 + 2] = (float)rad;
+
+						lineVtx[j * 6 + 3] = x1;
+						lineVtx[j * 6 + 4] = 0.0f;
+						lineVtx[j * 6 + 5] = (float)rad;
+				}
+
+				//range from cutoff to lng with gaps
+				for (int j = 5; j < 10; j++)
+				{
+					const float x0 = (float)(cutoff + lineSpan * (double)(j - 5) / 5.0 + lineSpan / 10.0);
+					const float x1 = (float)(x0 + lineSpan / 10.0);
+					lineVtx[j * 6 + 0] = x0;
+					lineVtx[j * 6 + 1] = 0.0f;
+					lineVtx[j * 6 + 2] = (float)rad;
+
+					lineVtx[j * 6 + 3] = x1;
+					lineVtx[j * 6 + 4] = 0.0f;
+					lineVtx[j * 6 + 5] = (float)rad;
 				}
 			}
 
