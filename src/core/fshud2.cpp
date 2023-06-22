@@ -812,8 +812,8 @@ void FsHud2::DrawAttitude(
 				//range from -lng to -cutoff with gaps
 				for (int j = 0; j < 5; j++)
 				{
-						const float x0 = (float)(-lng + lineSpan * (double)j / 5.0);
-						const float x1=(float)(x0 + lineSpan / 10.0);
+						const float x0 = (float)(-lng + lineSpan * (double)j / 4.5);
+						const float x1=(float)(x0 + lineSpan / 9.0);
 						lineVtx[j * 6 + 0] = x0;
 						lineVtx[j * 6 + 1] = 0.0f;
 						lineVtx[j * 6 + 2] = (float)rad;
@@ -826,8 +826,8 @@ void FsHud2::DrawAttitude(
 				//range from cutoff to lng with gaps
 				for (int j = 5; j < 10; j++)
 				{
-					const float x0 = (float)(cutoff + lineSpan * (double)(j - 5) / 5.0 + lineSpan / 10.0);
-					const float x1 = (float)(x0 + lineSpan / 10.0);
+					const float x0 = (float)(cutoff + lineSpan * (double)(j - 5) / 4.5);
+					const float x1 = (float)(x0 + lineSpan / 9.0);
 					lineVtx[j * 6 + 0] = x0;
 					lineVtx[j * 6 + 1] = 0.0f;
 					lineVtx[j * 6 + 2] = (float)rad;
