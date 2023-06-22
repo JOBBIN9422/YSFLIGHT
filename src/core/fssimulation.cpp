@@ -8158,7 +8158,7 @@ void FsSimulation::SimDrawHud3d(const YsVec3 &fakeViewPos,const YsAtt3 &instView
 			    1.0,0.20,0.03,0.05,
 			    fakeViewPos,playerPlane->GetAttitude(),indicatedAttitude,fakeViewPos,instViewAtt);
 
-			hud2->DrawCrossHair(0.2,0.1,0.03);
+			hud2->DrawCrossHair(0.1,0.1,0.01);
 
 			hud2->DrawThrottle(-0.92,-0.6,0.05,0.38,inst.nEngine,inst.engineOutput,inst.afterBurner);
 
