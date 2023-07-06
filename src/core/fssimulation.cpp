@@ -8172,7 +8172,7 @@ void FsSimulation::SimDrawHud3d(const YsVec3 &fakeViewPos,const YsAtt3 &instView
 			hud2->DrawBank(inst.bank);
 			{
 				const FsVORIndication &nav=cockpitIndicationSet.nav[0];
-				hud2->DrawHSI(0.0,-0.5, 0.25,
+				hud2->DrawHSI(0.0,0.85, 0.25,
 				    inst.heading,
 				    (YSRESULT)nav.IsInRange(),
 				    nav.vorId,
