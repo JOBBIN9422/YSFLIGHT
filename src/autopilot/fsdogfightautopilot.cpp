@@ -22,10 +22,12 @@ FsDogfight::FsDogfight()
 	g1=0.0;
 	g2=0.0;
 	g3=0.0;
+	lastDamageValue = 0.0;
 	gLimit=9.0;
-	backSenseRange=YsDegToRad(20.0);
+	backSenseRange=YsDegToRad(45.0);
 	clock=0.0;
 	nextClock=0.0;
+	nextBreakClock = 0.0;
 	fireClock=0.0;
 	flareClock=0.0;
 
@@ -309,7 +311,8 @@ YSRESULT FsDogfight::SearchTarget(FsAirplane &air,FsSimulation *sim)
 		//rel1 = AI's relative position to the target aircraft
 		GetRelativePosition(rel1,trg->GetPosition(),air,sim);
 		rel2=rel1;
-		rel3=rel1;
+		rel3 = rel1;
+
 		return YSOK;
 	}
 	else
@@ -348,18 +351,10 @@ FsAirplane *FsDogfight::GetTarget(FsSimulation *sim)
 	return sim->FindAirplane(targetAirplaneKey);
 }
 
-//check for emergency recovery condition(s) - stall or low altitude?
+//check for emergency recovery condition(s) - stall or low altitude
 YSRESULT FsDogfight::MakePriorityDecision(FsAirplane &air)
 {
-	if(mode==DFMODE_NOTARGET/*-1*/ || air.Prop().GetFlightState()==FSSTALL)
-	{
-		return FsAutopilot::MakePriorityDecision(air);
-	}
-	else
-	{
-		emr=EMR_NONE;
-		return YSOK;
-	}
+	return FsAutopilot::MakePriorityDecision(air);
 }
 
 YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double &dt)
@@ -480,7 +475,8 @@ YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double
 	{
 		if(SearchTarget(air,sim)!=YSOK || (target=GetTarget(sim))==NULL)
 		{
-			goto NOTARGET;
+			mode = DFMODE_NOTARGET;
+			return YSOK;
 		}
 	}
 
@@ -492,13 +488,13 @@ YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double
 		//if we still could not find a valid target
 		if(SearchTarget(air,sim)!=YSOK)
 		{
-			goto NOTARGET;
+			mode = DFMODE_NOTARGET/*-1*/;
+			return YSOK;
 		}
-		else
-		{
-			tpos=target->GetPosition();  // Update to newer one
-		}
+		tpos=target->GetPosition();  // Update to newer one
 	}
+
+	double targetDist = (tpos - air.GetPosition()).GetLength();
 
 	radar=atan2(sqrt(rel1.x()*rel1.x()+rel1.y()*rel1.y()),YsAbs(rel1.z()));
 
@@ -528,6 +524,7 @@ YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double
 	if(target!=NULL && DangerOfCollision(air,*target)==YSTRUE)
 	{
 		mode=DFMODE_AVOIDING_HEADON_COLLISION/*6*/;
+		return YSOK; //crash avoidance shoudl take priority over other decisions, don't continue to decide
 	}
 	//check if the target is at low altitude based on altitude and radar angle
 	else if(target!=NULL && air.GetPosition().y()<GetAllowableAltitude(33.0,air) && (DFMODE_TARGET_INFRONT/*2*/!=mode || radar>YsDegToRad(3.0)))
@@ -535,6 +532,36 @@ YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double
 		mode=DFMODE_TARGET_FLYINGLOW/*5*/;
 	}
 
+	FSWEAPONTYPE chasingWeaponType;
+	YsVec3 chasingWeaponPos;
+
+	//if being chased by a missile, evade 
+	if (sim->IsMissileChasing(chasingWeaponType, chasingWeaponPos, &air))
+	{
+		if (nextBreakClock < clock)
+		{
+			mode = DFMODE_TARGET_ONBACK_BREAK/*3*/;
+			UpdateBreakClocks(0.5, 2.0);
+		}
+		else
+		{
+			mode = DFMODE_TARGET_ONBACK;
+		}
+		return YSOK; //missile evasion should take priority over other decisions, don't continue to decide 
+	}
+
+	//if AI aircraft just took damage, evade
+	double currDamageValue = air.Prop().GetDamageTolerance();
+	if (fabs(currDamageValue - lastDamageValue) >= YsTolerance && mode != DFMODE_TARGET_ONBACK_BREAK)
+	{
+		lastDamageValue = currDamageValue;
+		printf("took damage!\n");
+
+		mode = DFMODE_TARGET_ONBACK_BREAK/*3*/;
+		UpdateBreakClocks(0.25, 1.0);
+
+		return YSOK; //threat evasion should take priority over other decisions, don't continue to decide 
+	}
 
 	switch(mode)
 	{
@@ -574,20 +601,27 @@ YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double
 			//if target is within a backSenseRange-degree cone of AI aircraft's rear attitude: 
 			//   /
 			//  /
-			// / backSenseRange degrees (default 20 degrees)
+			// / backSenseRange degrees
 			//-----------------> AI aircraft rear attitude (relative Z axis, opposite dir)
 			// \ backSenseRange degreees
 			//  \
 			//   \
 
-			else if(rel1.z()<0.0 && radar<backSenseRange)
+			else if(rel1.z()<0.0 && radar < backSenseRange && targetDist <= 500.0)
 			{
-				mode=DFMODE_TARGET_ONBACK_BREAK/*3*/;  // Target is on the back!!
-				nextClock=clock+double(rand()%100)/100.0;
+				if (nextBreakClock < clock)
+				{
+					mode = DFMODE_TARGET_ONBACK_BREAK/*3*/;  // Target is on the back!!
+					UpdateBreakClocks(0.5, 4.0);
+				}
+				else
+				{
+					mode = DFMODE_TARGET_ONBACK;
+				}
 			}
 
 			//if the target is not in front or behind the AI's aircraft and current mode has been active for a while:
-			else if(modeDuration>20.0)
+			else if(modeDuration>5.0)
 			{
 				//50-50: perform a yo-yo or climb
 				if(rand()%2==0)
@@ -611,13 +645,28 @@ YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double
 	//current mode: target is behind AI's aircraft
 	case DFMODE_TARGET_ONBACK/*1*/:
 		{
+			//target still on back: try to maneuver again 
+			if (rel1.z() < 0.0 && nextBreakClock < clock)
+			{
+				//1 in 4 chance: yo-yo
+				if (rand() % 4 == 0)
+				{
+					mode = DFMODE_HIGH_G_YO_YO;
+				}
+				//3 in 4 chance: break/bank again
+				else
+				{
+					mode = DFMODE_TARGET_ONBACK_BREAK;
+					UpdateBreakClocks(0.5, 4.0);
+				}
+			}
 			//if the aircraft is now in front of us, set mode accordingly
-			if(rel1.z()>0.0 && radar<YsDegToRad(30.0))
+			else if(rel1.z()>0.0 && radar<YsDegToRad(30.0))
 			{
 				mode=DFMODE_TARGET_INFRONT/*2*/; // Eventually Got Target On The Scope!!
 			}
 			//if target is not strictly in front or behind AI aircraft, return to normal mode
-			else if(rel1.z()>0.0 || radar>backSenseRange)
+			else if(rel1.z()>0.0 && radar>=YsDegToRad(30.0))
 			{
 				mode=DFMODE_NORMAL/*0*/;
 			}
@@ -875,10 +924,6 @@ YSRESULT FsDogfight::MakeDecision(FsAirplane &air,FsSimulation *sim,const double
 	}
 
 	return YSOK;
-
-NOTARGET:
-	mode=DFMODE_NOTARGET/*-1*/;
-	return YSOK;
 }
 
 FsAirplane *FsDogfight::GetWingmansTarget(FsAirplane &,FsSimulation *sim)
@@ -977,7 +1022,7 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 {
 	// char n[256];
 	// air.Prop().GetIdentifier(n);
-	// printf("DF: Mode %d %lf %s\n",mode,modeDuration,n);
+	//printf("DF ApplyControl(): Mode %d %lf\n",mode,modeDuration);
 
 	FsAirplane *target=GetTarget(sim);
 
@@ -1040,14 +1085,14 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 					if((chasingWeaponPos-air.GetPosition()).GetSquareLength()<4000.0*4000.0)
 					{
 						air.Prop().SetDispenseFlareButton(YSTRUE);
-						flareClock = clock + (double)FsGetRandomBetween(6, 10);
+						flareClock = clock + FsGetRandomBetween(6.0, 10.0);
 					}
 					break;
 				case FSWEAPON_AIM9:
 					if((chasingWeaponPos-air.GetPosition()).GetSquareLength()<2000.0*2000.0)
 					{
 						air.Prop().SetDispenseFlareButton(YSTRUE);
-						flareClock=clock + (double)FsGetRandomBetween(2, 6);
+						flareClock=clock + FsGetRandomBetween(2.0, 6.0);
 					}
 					break;
 
@@ -1055,7 +1100,7 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 					if((chasingWeaponPos-air.GetPosition()).GetSquareLength()<1000.0*1000.0)
 					{
 						air.Prop().SetDispenseFlareButton(YSTRUE);
-						flareClock=clock + (double)FsGetRandomBetween(1, 3);
+						flareClock=clock + FsGetRandomBetween(1.0, 3.0);
 					}
 					break;			
 			}
@@ -1273,9 +1318,16 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 					// The target is on the back
 					air.Prop().TurnOffBankController();
 					air.Prop().TurnOffPitchController();
-					air.Prop().GController(maxg);
+					air.Prop().GController(gLimit);
 					air.Prop().SetAileron(0.0);
 					air.Prop().SetRudder(0.0);
+
+					//if the target is close, try to cut speed and have them overshoot
+					double targetDist = (target->GetPosition() - air.GetPosition()).GetLength();
+					if (targetDist <= 500.0 && (int)nextBreakClock % 2)
+					{
+						air.Prop().SpeedController(target->Prop().GetVelocity() * 0.6);
+					}
 
 					air.Prop().SetAirTargetKey(YSNULLHASHKEY);
 				}
@@ -1349,11 +1401,11 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 							double delay;
 							if(targetNew!=NULL && targetNew->GetPosition().y()>=330.0)
 							{
-								delay = (double)FsGetRandomBetween(2, 6);
+								delay = FsGetRandomBetween(2.0, 6.0);
 							}
 							else
 							{
-								delay= (double)FsGetRandomBetween(1, 3);
+								delay= FsGetRandomBetween(1.0, 3.0);
 							}
 
 							//if a valid new target was found, reset fire clock
@@ -1375,7 +1427,7 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 								{
 									air.Prop().FireWeapon
 									   (blockedByBombBayDoor,sim,sim->GetClock(),sim->GetWeaponStore(),&air,shortRangeType);
-									fireClock=clock + (double)FsGetRandomBetween(3, 7);
+									fireClock=clock + FsGetRandomBetween(3.0, 7.0);
 								}
 							}
 						}
@@ -1403,7 +1455,7 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 								YSBOOL blockedByBombBayDoor;
 								air.Prop().FireWeapon
 								   (blockedByBombBayDoor,sim,sim->GetClock(),sim->GetWeaponStore(),&air,FSWEAPON_AIM120);
-								fireClock=clock + (double)FsGetRandomBetween(10, 14);
+								fireClock=clock + FsGetRandomBetween(10.0, 14.0);
 							}
 						}
 						else
@@ -1470,32 +1522,34 @@ YSRESULT FsDogfight::ApplyControl(FsAirplane &air,FsSimulation *sim,const double
 				else if(mode==DFMODE_TARGET_ONBACK_BREAK/*3*/)
 				{
 					// Begin Breaking Off
-					air.Prop().GController(maxg);
+					air.Prop().GController(gLimit);
 
 					//if above 2200m: override bank controller, aileron left or right 
 					if(pos->y()>=2200.0)
 					{
 						air.Prop().TurnOffBankController();
-						if(int(nextClock)%2==0)
+
+						double aileronStrength = FsGetRandomBetween(0.5, 1.0);
+						if ((int)nextBreakClock % 2 == 0)
 						{
-							air.Prop().SetAileron(0.1);
+							air.Prop().SetAileron(aileronStrength);
 						}
 						else
 						{
-							air.Prop().SetAileron(-0.1);
+							air.Prop().SetAileron(-aileronStrength);
 						}
 					}
 
 					//if below 2200m: bank left or right 45 degrees
 					else
 					{
-						if(int(nextClock)%2==0)
+						if ((int)nextBreakClock % 2 == 0)
 						{
-							air.Prop().BankController(YsDegToRad(45.0));
+							air.Prop().BankController(YsDegToRad(45));
 						}
 						else
 						{
-							air.Prop().BankController(YsDegToRad(-45.0));
+							air.Prop().BankController(YsDegToRad(45));
 						}
 					}
 
@@ -1824,5 +1878,11 @@ YSBOOL FsDogfight::TargetIsWithinCombatRange(const FsExistence &air,const FsExis
 const double FsDogfight::GetCombatRange(void) const
 {
 	return combatThreshold;
+}
+
+void FsDogfight::UpdateBreakClocks(double minDuration, double maxDuration)
+{
+	nextClock = clock + double(rand() % 100) / 100.0;
+	nextBreakClock = clock + FsGetRandomBetween(minDuration, maxDuration);
 }
 
